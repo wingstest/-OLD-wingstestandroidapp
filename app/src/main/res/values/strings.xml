@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">PMY Tasker</string>
+    <string name="facebook_app_id">341678839888568</string>
+    <string name="fb_login_protocol_scheme">fb341678839888568</string>
+
+    <string name="API_URL">http://157.230.83.171/api</string>
+    <string name="CLIENT_ID">TjaTk1dt14vDi016DrvxIMBi5cchdd6lf3EKY98u</string>
+    <string name="CLIENT_SECRET">NA86n5QFbiKdI27JrdMWebrltxbVX9ApNe29600vBQyUh7CdwZoOBEy5VKlUzOLhAj6VzuS3PppQCI7lZln34dWMx3AcVHwpYCgtigbQPHNdUrtwX8asAgRMSA4y9mxU</string>
+    <string name="title_activity_customer_main">CustomerMainActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
