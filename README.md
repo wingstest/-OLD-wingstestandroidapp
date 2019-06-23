@@ -9,7 +9,7 @@ For example: http://157.230.83.171/api/customer/registrations/
 
 In the above url, api/customer/registrations is the endpoint.
 
-## ApiServiceBuilder
+## ApiServiceBuilder class
 
 Contains BASE_URL. This class is almost always same for any retrofit app.
 
