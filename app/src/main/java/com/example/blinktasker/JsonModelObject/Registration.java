@@ -4,8 +4,25 @@ package com.example.blinktasker.JsonModelObject;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
+
 public class Registration {
 
+    @SerializedName("registrations")
+    @Expose
+    private ArrayList<Registration> registrationArrayListModel;
+
+    @SerializedName("logo")
+    @Expose
+    private String logo;
+
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
 
     @SerializedName("id")
     @Expose
@@ -51,7 +68,13 @@ public class Registration {
     public void setAddress(String address) {
         this.address = address;
     }
+    public ArrayList<Registration> getRegistrationArrayListModel() {
+        return registrationArrayListModel;
+    }
 
+    public void setRegistrationArrayListModel(ArrayList<Registration> registrationArrayListModel) {
+        this.registrationArrayListModel = registrationArrayListModel;
+    }
     @Override
     public String toString() {
         return "Registration{" +

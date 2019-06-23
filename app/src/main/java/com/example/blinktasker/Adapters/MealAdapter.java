@@ -32,14 +32,14 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
 
     @NonNull
     @Override
-    public MealAdapter.MealViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+    public MealViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(activity).inflate(R.layout.list_item_meal, viewGroup, false);
 
         return new MealViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MealAdapter.MealViewHolder mealViewHolder, final int position) {
+    public void onBindViewHolder(@NonNull MealViewHolder mealViewHolder, final int position) {
 
         String mealNameText = mealModelList.get(position).getName();
           String mealDescText = mealModelList.get(position).getShort_description();

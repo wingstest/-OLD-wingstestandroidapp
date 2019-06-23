@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.example.blinktasker.Adapters.ResAdapter;
 import com.example.blinktasker.ApiService;
 import com.example.blinktasker.ApiServiceBuilder;
+import com.example.blinktasker.JsonModelObject.Registration;
 import com.example.blinktasker.Objects.RestaurantModel;
 import com.example.blinktasker.R;
 
@@ -38,10 +39,10 @@ public class RestaurantListFragment extends Fragment {
 
 
     private RecyclerView recyclerView;
-    private ArrayList<RestaurantModel> restaurantModelArrayList;
+    private ArrayList<Registration> restaurantModelArrayList;
     //    private RestaurantAdapter adapter;
     private ResAdapter resAdapter;
-    private RestaurantModel[] restaurantModels = new RestaurantModel[]{};
+    private Registration[] listArr = new Registration[]{};
 
     public RestaurantListFragment() {
         // Required empty public constructor
@@ -58,7 +59,7 @@ public class RestaurantListFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        restaurantModelArrayList = new ArrayList<RestaurantModel>();
+        restaurantModelArrayList = new ArrayList<Registration>();
 
         resAdapter = new ResAdapter(restaurantModelArrayList, this.getActivity());
 
@@ -81,24 +82,27 @@ public class RestaurantListFragment extends Fragment {
 
         ApiService apiService = ApiServiceBuilder.getService();
 
-        Call<RestaurantModel> call = apiService.getResponseRestuarnatList();
+        Call<Registration> call = apiService.getResponseRestuarnatList();
 
-        call.enqueue(new Callback<RestaurantModel>() {
+        call.enqueue(new Callback<Registration>() {
             @Override
-            public void onResponse(Call<RestaurantModel> call, Response<RestaurantModel> response) {
+            public void onResponse(Call<Registration> call, Response<Registration> response) {
 
+                Registration registration = response.body();
                 for (int i = 0; i < response.body().getRegistrationArrayListModel().size(); i++) {
 
                     restaurantModelArrayList.add(response.body().getRegistrationArrayListModel().get(i));
 
                     Log.d(TAG, "onResponse: restaurantModelArrayList" + restaurantModelArrayList.get(i).getName());
                 }
+                listArr = new Registration[restaurantModelArrayList.size()];
+                listArr = restaurantModelArrayList.toArray(listArr);
                 resAdapter.notifyDataSetChanged();
 
             }
 
             @Override
-            public void onFailure(Call<RestaurantModel> call, Throwable t) {
+            public void onFailure(Call<Registration> call, Throwable t) {
                 Toast.makeText(getApplicationContext(), t.getLocalizedMessage(), Toast.LENGTH_LONG).show();
 
             }
@@ -124,10 +128,11 @@ public class RestaurantListFragment extends Fragment {
 
                 restaurantModelArrayList.clear();
 
-                for (RestaurantModel restaurantModel : restaurantModels) {
-                    if (restaurantModel.getName().toLowerCase().contains(charSequence.toString().toLowerCase())) {
+                for (Registration r : listArr) {
+                    if (r.getName().toLowerCase().contains(charSequence.toString().toLowerCase())) {
 
-                        restaurantModelArrayList.add(restaurantModel);
+                        restaurantModelArrayList.add(r);
+
                     }
                 }
                 resAdapter.notifyDataSetChanged();

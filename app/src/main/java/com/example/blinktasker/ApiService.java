@@ -1,9 +1,9 @@
 package com.example.blinktasker;
 
 import com.example.blinktasker.JsonModelObject.Example;
+import com.example.blinktasker.JsonModelObject.Registration;
 import com.example.blinktasker.JsonModelObject.ResponseBodyLogin;
 import com.example.blinktasker.JsonModelObject.StatusSuccessOrError;
-import com.example.blinktasker.JsonModelObject.locationdriverupdate.LocationDriverUpdate;
 import com.example.blinktasker.JsonModelObject.revenue.ExampleRevenue;
 import com.example.blinktasker.Objects.MealModel;
 import com.example.blinktasker.Objects.OrderModel;
@@ -49,14 +49,6 @@ public interface ApiService {
             @Field("stripe_token") String stripeToken);
 
 
-    @FormUrlEncoded
-    @POST("api/driver/location/update")
-    Call<LocationDriverUpdate> getResponseDriverLocationUpdate(
-            @Field("access_token") String accessToken,
-            @Field("location") String locationDriverUpdate
-
-    );
-
     @POST("/api/social/convert-token")
     Call<ResponseBodyLogin> facebookLogin(@Body RequestBody request);
 
@@ -68,16 +60,6 @@ public interface ApiService {
     @GET("api/customer/order/latest/")
     Call<Example> getResponseQuery(
             @Query("access_token") String responseAccessToken
-    );
-
-
-    @Headers({
-            "Accept: application/json",
-            "Content-Type: application/json"
-    })
-    @GET("api/driver/order/latest/")
-    Call<Example> getResponseDriverOrderLatest(
-            @Query("access_token") String responseAccessTokenDriverOrderLatest
     );
 
     @Headers({
@@ -112,7 +94,7 @@ public interface ApiService {
             "Content-Type: application/json"
     })
     @GET("api/customer/registrations")
-    Call<RestaurantModel> getResponseRestuarnatList();
+    Call<Registration> getResponseRestuarnatList();
 
     @Headers({
             "Accept: application/json",
@@ -120,8 +102,5 @@ public interface ApiService {
     })
     @GET("api/driver/orders/ready")
     Call<OrderModel> getReponseDriverOrderReady();
-
-
-
 
 }

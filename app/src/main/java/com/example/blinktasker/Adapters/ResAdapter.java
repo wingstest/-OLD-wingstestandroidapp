@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.blinktasker.Activities.MealListActivity;
+import com.example.blinktasker.JsonModelObject.Registration;
 import com.example.blinktasker.Objects.RestaurantModel;
 import com.example.blinktasker.R;
 import com.squareup.picasso.Picasso;
@@ -19,10 +20,10 @@ import java.util.List;
 
 public class ResAdapter extends RecyclerView.Adapter<ResAdapter.MyViewHolder> {
 
-    private List<RestaurantModel> restaurantModelList;
+    private List<Registration> restaurantModelList;
     private Activity activity;
 
-    public ResAdapter(List<RestaurantModel> restaurantModelList, Activity activity) {
+    public ResAdapter(List<Registration> restaurantModelList, Activity activity) {
         this.restaurantModelList = restaurantModelList;
         this.activity = activity;
     }
@@ -40,7 +41,7 @@ public class ResAdapter extends RecyclerView.Adapter<ResAdapter.MyViewHolder> {
         String resLogoImage1 = restaurantModelList.get(position).getLogo();
         final String resNameText1 = restaurantModelList.get(position).getName();
         String resAddressText1 = restaurantModelList.get(position).getAddress();
-        final String resIdText1 = restaurantModelList.get(position).getId();
+        final String resIdText1 = String.valueOf(restaurantModelList.get(position).getId());
 
         myViewHolder.setData(resNameText1, resAddressText1, resLogoImage1);
         myViewHolder.itemView.setOnClickListener(new View.OnClickListener() {

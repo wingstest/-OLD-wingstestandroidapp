@@ -41,12 +41,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.blinktasker.ApiService;
-import com.example.blinktasker.ApiServiceBuilder;
-import com.example.blinktasker.JsonModelObject.Example;
-import com.example.blinktasker.JsonModelObject.Order;
-import com.example.blinktasker.JsonModelObject.OrderDetail;
-import com.example.blinktasker.JsonModelObject.locationdriverupdate.LocationDriverUpdate;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -86,15 +80,12 @@ import com.example.blinktasker.Activities.PaymentActivity;
 import com.example.blinktasker.R;
 import com.example.blinktasker.Utils.CircleTransform;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
-    private static final String TAG = "loghere";
+
 
     private TextView customerName;
     private TextView customerAddress;
@@ -110,10 +101,6 @@ public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
     private LocationCallback mLocationCallback;
     private String orderId;
     private RequestQueue queue;
-    private Order orderDeliveryFrag;
-
-    private SharedPreferences sharedPref;
-
 
     public DeliveryFragment() {
         // Required empty public constructor
@@ -136,8 +123,6 @@ public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
         customerImage = getActivity().findViewById(R.id.customer_image_driver);
         MarkerPoints = new ArrayList<>();
 
-        sharedPref = getActivity().getSharedPreferences("MY_KEY", Context.MODE_PRIVATE);
-
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.delivery_map);
         mapFragment.getMapAsync(this);
 
@@ -152,66 +137,79 @@ public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
 
     private void getLatestOrder() {
 
-
         SharedPreferences sharedPref = getActivity().getSharedPreferences("MY_KEY", Context.MODE_PRIVATE);
-        ApiService service = ApiServiceBuilder.getService();
-        Call<Example> call = service.getResponseDriverOrderLatest(sharedPref.getString("token", ""));
-        call.enqueue(new Callback<Example>() {
-            @Override
-            public void onResponse(Call<Example> call, retrofit2.Response<Example> response) {
-                Example example = response.body();
-                Boolean orderIsDelivered = null;
-                orderId = null;
 
-                try {
-                    orderDeliveryFrag = example.getOrder();
-                    orderId = String.valueOf(orderDeliveryFrag.getId());
-                    orderIsDelivered = example.getOrder().getStatus().equals("Delivered");
-                    customerName.setText(example.getOrder().getCustomer().getName());
-                    Log.d(TAG, "onResponse: customerName: " + example.getOrder().getCustomer().getName());
-                    customerAddress.setText(example.getOrder().getAddress());
-                    Log.d(TAG, "onResponse: customerAddress: " + example.getOrder().getAddress());
+        String url = getString(R.string.API_URL) + "/driver/order/latest/?access_token=" + sharedPref.getString("token", "");
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
 
-                    Picasso.with(getActivity())
-                            .load(example.getOrder().getCustomer().getAvatar())
-                            .transform(new CircleTransform())
-                            .into(customerImage);
+                        Log.d("GET LATEST ORDER", response.toString());
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                        JSONObject latestOrderJSONObject = null;
+                        orderId = null;
+                        Boolean orderIsDelivered = null;
+
+
+                        try {
+
+                            latestOrderJSONObject = response.getJSONObject("order");
+                            orderId = latestOrderJSONObject.getString("id");
+                            orderIsDelivered = latestOrderJSONObject.getString("status").equals("Delivered");
+
+                            customerName.setText(latestOrderJSONObject.getJSONObject("customer").getString("name"));
+                            customerAddress.setText(latestOrderJSONObject.getString("address"));
+                            Picasso.with(getActivity())
+                                    .load(latestOrderJSONObject.getJSONObject("customer").getString("avatar"))
+                                    .transform(new CircleTransform())
+                                    .into(customerImage);
+
+                        } catch (JSONException e) {
+
+                            e.printStackTrace();
+                        }
+
+                        if (latestOrderJSONObject == null || orderId == null || orderIsDelivered) {
+
+                            TextView alertText = new TextView(getActivity());
+                            alertText.setText("you have no outstanding order");
+                            alertText.setTextSize(17);
+                            alertText.setId(alertText.generateViewId());
+
+                            ConstraintLayout constraintLayout = getActivity().findViewById(R.id.delivery_layout);
+                            constraintLayout.removeAllViews();
+                            constraintLayout.addView(alertText);
+
+                            ConstraintSet set = new ConstraintSet();
+                            set.clone(constraintLayout);
+                            set.connect(alertText.getId(), ConstraintSet.BOTTOM, constraintLayout.getId(), ConstraintSet.BOTTOM);
+                            set.connect(alertText.getId(), ConstraintSet.TOP, constraintLayout.getId(), ConstraintSet.TOP);
+                            set.connect(alertText.getId(), ConstraintSet.LEFT, constraintLayout.getId(), ConstraintSet.LEFT);
+                            set.connect(alertText.getId(), ConstraintSet.RIGHT, constraintLayout.getId(), ConstraintSet.RIGHT);
+                            set.applyTo(constraintLayout);
+
+                        }
+
+                        drawRouteOnMap(response);
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
                 }
+        );
 
-                if (example == null || orderId == null || orderIsDelivered) {
-
-                    TextView alertText = new TextView(getActivity());
-                    alertText.setText("you have no outstanding order");
-                    alertText.setTextSize(17);
-                    alertText.setId(alertText.generateViewId());
-
-                    ConstraintLayout constraintLayout = getActivity().findViewById(R.id.delivery_layout);
-                    constraintLayout.removeAllViews();
-                    constraintLayout.addView(alertText);
-
-                    ConstraintSet set = new ConstraintSet();
-                    set.clone(constraintLayout);
-                    set.connect(alertText.getId(), ConstraintSet.BOTTOM, constraintLayout.getId(), ConstraintSet.BOTTOM);
-                    set.connect(alertText.getId(), ConstraintSet.TOP, constraintLayout.getId(), ConstraintSet.TOP);
-                    set.connect(alertText.getId(), ConstraintSet.LEFT, constraintLayout.getId(), ConstraintSet.LEFT);
-                    set.connect(alertText.getId(), ConstraintSet.RIGHT, constraintLayout.getId(), ConstraintSet.RIGHT);
-                    set.applyTo(constraintLayout);
-
-                }
-
-                drawRouteOnMap(response.body().getOrder());
-
-            }
-
-            @Override
-            public void onFailure(Call<Example> call, Throwable t) {
-
-            }
-        });
-
+        if (queue == null) {
+            queue = Volley.newRequestQueue(getActivity());
+        }
+        queue.add(jsonObjectRequest);
 
     }
 
@@ -315,7 +313,7 @@ public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-            DeliveryFragment.ParserTask parserTask = new DeliveryFragment.ParserTask();
+            ParserTask parserTask = new ParserTask();
 
             // Invokes the thread for parsing the JSON data
             parserTask.execute(result);
@@ -335,7 +333,7 @@ public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
             try {
                 jObject = new JSONObject(jsonData[0]);
                 Log.d("ParserTask", jsonData[0].toString());
-                DeliveryFragment.DataParser parser = new DeliveryFragment.DataParser();
+                DataParser parser = new DataParser();
                 Log.d("ParserTask", parser.toString());
 
                 // Starts parsing data
@@ -486,13 +484,12 @@ public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
     }
     //------------------------new function end--------------------------------------
 
-    private void drawRouteOnMap(Order response) {
+    private void drawRouteOnMap(JSONObject response) {
 
         try {
 
-//            String restaurantAddress = response.getJSONObject("order").getJSONObject("registration").getString("address");
-            String restaurantAddress = response.getRegistration().getAddress();
-            String orderAddress = response.getAddress();
+            String restaurantAddress = response.getJSONObject("order").getJSONObject("registration").getString("address");
+            String orderAddress = response.getJSONObject("order").getString("address");
 
             Geocoder coder = new Geocoder(getActivity());
             ArrayList<Address> resAddresses = (ArrayList<Address>) coder.getFromLocationName(restaurantAddress, 1);
@@ -507,7 +504,7 @@ public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
                 MarkerPoints.add(orderPos);
                 String url = getUrl(restaurantPos, orderPos);
                 Log.d("onMapClick", url.toString());
-                DeliveryFragment.FetchUrl FetchUrl = new DeliveryFragment.FetchUrl();
+                FetchUrl FetchUrl = new FetchUrl();
 
                 // Start downloading json data from Google Directions API
                 FetchUrl.execute(url);
@@ -525,7 +522,7 @@ public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
             }
 
 
-        } catch (Exception e) {
+        } catch (JSONException | IOException e) {
 
             e.printStackTrace();
         }
@@ -570,7 +567,7 @@ public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
                                         .title("Driver Location")
                                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin_car)));
 
-                                updateDriverLocation(mLastKnownLocation.getLatitude() + "," + mLastKnownLocation.getLongitude(), sharedPref.getString("token", ""));
+                                updateDriverLocation(mLastKnownLocation.getLatitude() + "," + mLastKnownLocation.getLongitude());
 
                             }
                         }
@@ -639,7 +636,7 @@ public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
 
                             );
 
-                            updateDriverLocation(location.getLatitude() + "," + location.getLongitude(), sharedPref.getString("token", ""));
+                            updateDriverLocation(location.getLatitude() + "," + location.getLongitude());
 
                             Log.d("NEW DRIVER LOCATION", Double.toString(pos.latitude) + "," + Double.toString(pos.longitude));
 
@@ -670,70 +667,52 @@ public class DeliveryFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
-    private void updateDriverLocation(final String location, String accessTokenDriverLocationUpdate) {
-        Log.d(TAG, "updateDriverLocation: " + location + accessTokenDriverLocationUpdate);
-        ApiService service = ApiServiceBuilder.getService();
-        Call<LocationDriverUpdate> call = service.getResponseDriverLocationUpdate(accessTokenDriverLocationUpdate,location);
-        call.enqueue(new Callback<LocationDriverUpdate>() {
-            @Override
-            public void onResponse(Call<LocationDriverUpdate> call, retrofit2.Response<LocationDriverUpdate> response) {
-            }
+    private void updateDriverLocation(final String location) {
+
+
+        String url = getString(R.string.API_URL) + "/driver/location/update/";
+
+        StringRequest postRequest = new StringRequest
+                (Request.Method.POST, url, new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+
+
+                        Log.d("UPDATE DRIVER LOCATION", response);
+
+
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                        Log.d("ERROR MESSAGE", error.toString());
+
+                    }
+                }) {
 
             @Override
-            public void onFailure(Call<LocationDriverUpdate> call, Throwable t) {
-                        Log.d("ERROR MESSAGE", t.toString());
+            protected Map<String, String> getParams() throws AuthFailureError {
+
+                final SharedPreferences sharedPref = getActivity().getSharedPreferences("MY_KEY", Context.MODE_PRIVATE);
+                Map<String, String> params = new HashMap<String, String>();
+
+                params.put("access_token", sharedPref.getString("token", ""));
+                params.put("location", location);
+
+
+                return params;
 
             }
+        };
 
-        });
+        postRequest.setRetryPolicy(new DefaultRetryPolicy(0, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
 
-
-//        String url = getString(R.string.API_URL) + "/driver/location/update/";
-//
-//        StringRequest postRequest = new StringRequest
-//                (Request.Method.POST, url, new Response.Listener<String>() {
-//
-//                    @Override
-//                    public void onResponse(String response) {
-//
-//
-//                        Log.d("UPDATE DRIVER LOCATION", response);
-//
-//
-//                    }
-//                }, new Response.ErrorListener() {
-//
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//
-//                        Log.d("ERROR MESSAGE", error.toString());
-//
-//                    }
-//                }) {
-
-//            @Override
-//            protected Map<String, String> getParams() throws AuthFailureError {
-//
-//                final SharedPreferences sharedPref = getActivity().getSharedPreferences("MY_KEY", Context.MODE_PRIVATE);
-//                Map<String, String> params = new HashMap<String, String>();
-//
-//                params.put("access_token", sharedPref.getString("token", ""));
-//                params.put("location", location);
-//
-//
-//                return params;
-////
-////            }
-//
-
-//        };
-
-//        postRequest.setRetryPolicy(new DefaultRetryPolicy(0, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-//
-//
-//        queue = Volley.newRequestQueue(getActivity());
-//        queue.add(postRequest);
+        queue = Volley.newRequestQueue(getActivity());
+        queue.add(postRequest);
 
     }
 

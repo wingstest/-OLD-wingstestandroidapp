@@ -26,14 +26,14 @@ public class TrayAdapter extends RecyclerView.Adapter<TrayAdapter.TrayViewHolder
 
     @NonNull
     @Override
-    public TrayAdapter.TrayViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+    public TrayViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(activity).inflate(R.layout.list_item_tray, viewGroup, false);
 
         return new TrayViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TrayAdapter.TrayViewHolder trayViewHolder, int position) {
+    public void onBindViewHolder(@NonNull TrayViewHolder trayViewHolder, int position) {
         String mealNameText = trayModelList.get(position).getMealName();
         final String mealQuantityText = String.valueOf(trayModelList.get(position).getMealQuantity());
         String mealSubtotalText = String.valueOf(trayModelList.get(position).getMealPrice() * trayModelList.get(position).getMealQuantity());

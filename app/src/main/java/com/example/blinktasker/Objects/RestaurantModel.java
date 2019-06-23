@@ -11,9 +11,6 @@ public class RestaurantModel {
     private String id, name, address, logo;
 
 
-    @SerializedName("registrations")
-    @Expose
-    private ArrayList<RestaurantModel> registrationArrayListModel;
 
 
     public RestaurantModel(String id, String name, String address, String logo) {
@@ -23,13 +20,6 @@ public class RestaurantModel {
         this.logo = logo;
     }
 
-    public ArrayList<RestaurantModel> getRegistrationArrayListModel() {
-        return registrationArrayListModel;
-    }
-
-    public void setRegistrationArrayListModel(ArrayList<RestaurantModel> registrationArrayListModel) {
-        this.registrationArrayListModel = registrationArrayListModel;
-    }
 
     public String getId() {
         return id;
@@ -54,7 +44,6 @@ public class RestaurantModel {
                 ", name='" + name + '\'' +
                 ", address='" + address + '\'' +
                 ", logo='" + logo + '\'' +
-                ", registrationArrayListModel=" + registrationArrayListModel +
                 '}';
     }
 }
